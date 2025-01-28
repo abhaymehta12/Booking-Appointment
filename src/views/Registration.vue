@@ -1,5 +1,5 @@
 <template>
-  <v-container> Home </v-container>
+  <v-container> Registration </v-container>
 </template>
 <script>
 export default {
