@@ -1,7 +1,6 @@
 <template>
   <v-app-bar :elevation="2" app color="indigo" dark>
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
-    <v-app-bar-title class="text-button">Appointment Schedule</v-app-bar-title>
+    <div class="mx-auto text-h5 font-weight-medium">Appointment Schedule</div>
   </v-app-bar>
 </template>
 <script>
