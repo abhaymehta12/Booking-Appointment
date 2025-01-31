@@ -5,6 +5,9 @@
     class="mx-auto pa-5 pa-sm-15"
     elevation="3"
   >
+    <v-snackbar v-model="snackbar" color="red accent-2" top right class="mt-14"
+      >Please provide valid details.</v-snackbar
+    >
     <v-form ref="form" class="mt-5">
       <v-text-field
         outlined
@@ -25,14 +28,22 @@
       ></v-text-field>
     </v-form>
     <v-card-actions class="justify-space-between mt-8">
-      <v-btn class="px-6" @click="submit"> Login </v-btn>
-      <v-btn @click="goToRegister" class="px-3" color="teal" dark>
+      <v-btn
+        :disabled="loading"
+        @click="goToRegister"
+        class="px-3"
+        color="teal"
+        :dark="!loading"
+      >
         Register
       </v-btn>
+      <v-btn :loading="loading" class="px-6" @click="submit"> Login </v-btn>
     </v-card-actions>
   </v-card>
 </template>
 <script>
+import { mapActions } from "vuex";
+
 export default {
   data: () => ({
     username: "",
@@ -40,11 +51,28 @@ export default {
     valid: false,
     nameRules: [(v) => !!v || "Name is required"],
     passRules: [(v) => !!v || "Password is required"],
+    snackbar: false,
+    loading: false,
   }),
 
   methods: {
-    submit() {
-      this.$refs.form.validate();
+    ...mapActions("dataModule", ["login"]),
+    async submit() {
+      const valid = this.$refs.form.validate();
+      this.loading = true;
+      if (valid) {
+        let obj = {
+          username: this.username,
+          password: this.password,
+        };
+        const resp = await this.login(obj);
+        if (!resp) {
+          this.snackbar = true;
+        } else {
+          this.$router.push("/adminpage");
+        }
+      }
+      this.loading = false;
     },
     goToRegister() {
       this.$router.push("/registration");

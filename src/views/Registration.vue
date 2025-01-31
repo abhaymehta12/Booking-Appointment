@@ -5,11 +5,21 @@
     class="mx-auto pa-5 pa-sm-10"
     elevation="3"
   >
-    <v-snackbar v-model="snackbar" color="red accent-2" top right class="mt-14"
-      >Please provide all details.</v-snackbar
+    <v-snackbar
+      v-model="snackbar"
+      color="red accent-2"
+      top
+      right
+      class="mt-14"
+      >{{ message }}</v-snackbar
     >
     <v-tabs v-model="tab">
-      <v-tabs-slider color="primary"></v-tabs-slider>
+      <v-progress-linear
+        :active="loading"
+        :indeterminate="loading"
+        absolute
+        color="primary accent-4"
+      ></v-progress-linear>
       <v-tab>Form</v-tab>
       <v-tab>Sign Up</v-tab>
     </v-tabs>
@@ -18,7 +28,7 @@
         <v-text-field
           outlined
           v-model="details.name"
-          label="Name"
+          label="Full Name"
           hide-details="auto"
           class="mt-3"
         ></v-text-field>
@@ -49,6 +59,7 @@
           label="Gender"
           class="mt-3"
           outlined
+          hide-details="auto"
         ></v-select>
       </v-tab-item>
       <v-tab-item>
@@ -63,21 +74,37 @@
           outlined
           v-model="details.password"
           label="Password"
-          type="password"
           hide-details="auto"
           class="mt-3"
         ></v-text-field>
       </v-tab-item>
     </v-tabs-items>
-    <v-card-actions v-if="tab" class="justify-space-between mt-8">
-      <v-btn class="px-3" @click="submit"> Submit </v-btn>
-      <v-btn @click="goToRegister" class="px-3" color="teal" dark>
+    <v-card-actions class="justify-space-between mt-8">
+      <v-btn
+        :disabled="loading"
+        @click="goToSignIn"
+        class="px-3"
+        color="teal"
+        dark
+      >
         SignIn
       </v-btn>
+      <v-btn v-if="tab" :disabled="loading" class="px-3" @click="submit">
+        Submit
+      </v-btn>
     </v-card-actions>
+    <v-card-subtitle class="mt-10" v-if="tab">
+      Rules for password:
+      <ul>
+        <li>Enter atleast 6 characters.</li>
+        <li>Should contain a special character.</li>
+      </ul>
+    </v-card-subtitle>
   </v-card>
 </template>
 <script>
+import { mapActions } from "vuex";
+
 export default {
   data: () => ({
     details: {
@@ -88,33 +115,71 @@ export default {
       gender: "",
       username: "",
       password: "",
+      role: "student",
     },
     tab: null,
     items: ["female", "male"],
     snackbar: false,
+    message: "",
+    loading: false,
   }),
 
   methods: {
-    submit() {
+    ...mapActions("dataModule", ["registeration"]),
+    async submit() {
+      this.loading = true;
+      if (this.validation()) {
+        const resp = await this.registeration(this.details);
+        if (resp) {
+          this.message = resp;
+          this.snackbar = true;
+        } else {
+          this.message = "Registered successfully !!";
+          this.snackbar = true;
+          this.clearForm();
+          this.goToSignIn();
+        }
+      }
+      this.loading = false;
+    },
+    goToSignIn() {
+      this.$router.push("/login");
+    },
+    validation() {
+      const character = /[!@#$%^&*(),.?":{}|<>~\-_+\[\]\\`]/;
       if (
         !this.details.name ||
         !this.details.rollN ||
         !this.details.father ||
+        !this.details.number ||
+        !this.details.gender ||
         !this.details.username ||
         !this.details.password
       ) {
+        this.message = "Please provide all details.";
         this.snackbar = true;
+      } else if (
+        this.details.password.length < 6 ||
+        !character.test(this.details.password)
+      ) {
+        this.message = "Please provide valid password.";
+        this.snackbar = true;
+      } else {
+        return true;
       }
-      console.log(this.details);
+      return false;
     },
-    goToRegister() {
-      this.$router.push("/login");
+    clearForm() {
+      this.details = {
+        name: "",
+        rollN: "",
+        father: "",
+        number: "",
+        gender: "",
+        username: "",
+        password: "",
+      };
     },
   },
 };
 </script>
-<style>
-.v-icon {
-  bottom: 3px;
-}
-</style>
