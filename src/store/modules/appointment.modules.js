@@ -1,37 +1,54 @@
-//import firebase from 'firebase/compat/app'
-//import 'firebase/compat/firestore'
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/firestore'
 
 export default {
     namespaced: true,
     state: {
+        teachers: [],
+        nonregistered_student: []
     },
     getters: {
     },
-    /*actions: {
-        async getGroups({ commit }) {
+    actions: {
+        async getTeachers({ commit }) {
             try {
-                const data = await firebase.firestore().collection("groups").get()
+                let array = []
+                const data = await firebase.firestore().collection('users').where('role', '==', 'teacher').get();
                 data.docs.forEach((doc) => {
-                    commit("set_group", doc.data())
+                    array.push(doc.data())
                 })
+                commit("set_teachers", array)
             } catch (error) {
-                console.log(error);
+                console.log(error)
             }
         },
-        deleteMember({ commit }, payload) {
-            firebase.firestore().collection("members").doc(payload).delete()
-        }
-        async setRoles({ commit }, payload) {
+        async getNRStudents({ commit }) {
             try {
-                console.log(payload)
+                let array = []
+                const data = await firebase.firestore().collection('users').where('registered', '==', false).get();
+                data.docs.forEach((doc) => {
+                    array.push(doc.data())
+                })
+                commit("nonregistered_student", array)
             } catch (error) {
-                console.log(error);
+                console.log(error)
+            }
+        },
+        async acceptRegistration({ commit, dispatch }, payload) {
+            try {
+                await firebase.firestore().collection("users").doc(payload.id).set({ registered: payload.val }, { merge: true })
+                dispatch('getNRStudents');
+            } catch (error) {
+                console.log(error)
             }
         },
     },
     mutations: {
-        set_group: (state, data) => {
-            state.groups = data;
+        set_teachers: (state, data) => {
+            state.teachers = data;
         },
-    }*/
+        nonregistered_student: (state, data) => {
+            state.nonregistered_student = data;
+        }
+    }
 }

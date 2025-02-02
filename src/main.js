@@ -9,21 +9,21 @@ Vue.config.productionTip = false
 
 //Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDQJ1AxI7KglHFFMn-Hx09_mO7FxnGH8hM",
-  authDomain: "booking-appointment-a2a89.firebaseapp.com",
-  projectId: "booking-appointment-a2a89",
-  storageBucket: "booking-appointment-a2a89.firebasestorage.app",
-  messagingSenderId: "873979012989",
-  appId: "1:873979012989:web:2b90a2b179ad465bb3ce14",
-  measurementId: "G-KHWGHE024T"
+  apiKey: process.env.VUE_APP_APIKEY,
+  authDomain: process.env.VUE_APP_AUTHDOMAIN,
+  projectId: process.env.VUE_APP_PROJECTID,
+  storageBucket: process.env.VUE_APP_STORAGEBUCKET,
+  messagingSenderId: process.env.VUE_APP_MESSAGINGSENDERID,
+  appId: process.env.VUE_APP_APPID,
+  measurementId: process.env.VUE_APP_MEASUREMENTID
 };
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
 new Vue({
-  router,
   store,
+  router,
   vuetify,
   render: h => h(App)
 }).$mount('#app')

@@ -11,6 +11,7 @@
       top
       right
       class="mt-14"
+      timeout="700"
       >{{ message }}</v-snackbar
     >
     <v-tabs v-model="tab">
@@ -49,7 +50,7 @@
         <v-text-field
           outlined
           v-model="details.number"
-          label="Mobile"
+          label="Contact"
           hide-details="auto"
           class="mt-3"
         ></v-text-field>
@@ -115,7 +116,7 @@ export default {
       gender: "",
       username: "",
       password: "",
-      role: "student",
+      registered: false
     },
     tab: null,
     items: ["female", "male"],
@@ -125,11 +126,11 @@ export default {
   }),
 
   methods: {
-    ...mapActions("dataModule", ["registeration"]),
+    ...mapActions("dataModule", ["registration"]),
     async submit() {
       this.loading = true;
       if (this.validation()) {
-        const resp = await this.registeration(this.details);
+        const resp = await this.registration(this.details);
         if (resp) {
           this.message = resp;
           this.snackbar = true;

@@ -4,14 +4,12 @@ import 'firebase/compat/firestore'
 export default {
     namespaced: true,
     state: {
-        teachers: [],
-        nonregistered_student: [],
         user: null
     },
     getters: {
     },
     actions: {
-        async registeration({ commit }, payload) {
+        async registration({ commit }, payload) {
             try {
                 const queryPass = await firebase.firestore().collection('users').where('password', '==', payload.password).get();
                 const queryUname = await firebase.firestore().collection('users').where('username', '==', payload.username).get();
@@ -35,6 +33,10 @@ export default {
                 } else {
                     user.docs.forEach((doc) => {
                         commit("set_user", doc.data())
+                        if (doc.data().role === 'admin') {
+                            localStorage.setItem('loggedUser', 'Admin')
+                        }
+                        localStorage.setItem('loggedIn', doc.data().id)
                     })
                     return true;
                 }
@@ -42,25 +44,20 @@ export default {
                 console.log(error)
             }
         },
-        async getTeachers({ commit }) {
+        logout({ commit }) {
             try {
-                const data = await firebase.firestore().collection('users').where('role', '==', 'teacher').get();
-                data.docs.forEach((doc) => {
-                    commit("set_teachers", doc.data())
-                })
+                localStorage.removeItem('loggedIn')
+                localStorage.removeItem('loggedUser')
+                commit("clear_data")
             } catch (error) {
                 console.log(error)
             }
         },
-        async getNRStudents({ commit }) {
-            try {
-                const data = await firebase.firestore().collection('users').where('registered', '==', false).get();
-                data.docs.forEach((doc) => {
-                    commit("nonregistered_student", doc.data())
-                })
-            } catch (error) {
-                console.log(error)
-            }
+        async getUserDetails({ commit }, payload) {
+            const user = await firebase.firestore().collection('users').where('id', '==', payload).get();
+            user.docs.forEach((doc) => {
+                commit("set_user", doc.data())
+            })
         },
         deleteUser({ commit }, payload) {
             firebase.firestore().collection("users").doc(payload).delete()
@@ -70,11 +67,10 @@ export default {
         set_user: (state, data) => {
             state.user = data;
         },
-        set_teachers: (state, data) => {
-            state.teachers.push(data);
-        },
-        nonregistered_student: (state, data) => {
-            state.nonregistered_student.push(data)
+        clear_data: (state) => {
+            state.user = null;
+            state.teachers = [];
+            state.nonregistered_student = [];
         }
     }
 }

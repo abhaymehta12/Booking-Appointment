@@ -8,7 +8,9 @@
 </template>
 
 <script>
-import Header from './components/Header.vue';
+import Header from "./components/Header.vue";
+import { mapActions } from "vuex";
+
 export default {
   name: "App",
 
@@ -16,8 +18,15 @@ export default {
     Header,
   },
 
-  data: () => ({
-    //
-  }),
+  created() {
+    const data = localStorage.getItem("loggedIn");
+    if (data) {
+      this.getUserDetails(data); 
+    }
+  },
+
+  methods: {
+    ...mapActions("dataModule", ["getUserDetails"]),
+  },
 };
 </script>

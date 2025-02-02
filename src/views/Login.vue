@@ -5,8 +5,15 @@
     class="mx-auto pa-5 pa-sm-15"
     elevation="3"
   >
-    <v-snackbar v-model="snackbar" color="red accent-2" top right class="mt-14"
-      >Please provide valid details.</v-snackbar
+    <v-snackbar
+      v-model="snackbar"
+      color="red accent-2"
+      top
+      right
+      class="mt-14"
+      timeout="700"
+    >
+      Please provide valid details.</v-snackbar
     >
     <v-form ref="form" class="mt-5">
       <v-text-field
@@ -42,7 +49,7 @@
   </v-card>
 </template>
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 export default {
   data: () => ({
@@ -68,8 +75,10 @@ export default {
         const resp = await this.login(obj);
         if (!resp) {
           this.snackbar = true;
-        } else {
+        } else if (this.user.role === "admin") {
           this.$router.push("/adminpage");
+        } else {
+          this.$router.push("/home");
         }
       }
       this.loading = false;
@@ -78,10 +87,13 @@ export default {
       this.$router.push("/registration");
     },
   },
+  computed: {
+    ...mapState("dataModule", { user: (state) => state.user }),
+  },
 };
 </script>
 <style lang="scss" scoped>
-.v-icon {
+::v-deep .v-icon {
   bottom: 3px;
 }
 </style>
