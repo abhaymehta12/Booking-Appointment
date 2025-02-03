@@ -14,29 +14,37 @@
     >
 
     <v-data-table
-      :items-per-page="5"
       :loading="tableLoader"
-      :headers="headerT"
-      :items="teachers"
+      :headers="header"
+      :items="data"
+      group-by="role"
+      group-desc
       class="mt-3"
+      :hide-default-footer="true"
     >
+      <template v-slot:[`group.header`]="{ group, headers, toggle, isOpen }">
+        <td :colspan="headers.length">
+          <v-btn @click="toggle" x-small icon :ref="group">
+            <v-icon v-if="isOpen">mdi-minus</v-icon>
+            <v-icon v-else>mdi-plus</v-icon>
+          </v-btn>
+          <span class="mx-5 font-weight-bold text-capitalize">{{ group }}</span>
+        </td>
+      </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon @click="editTeacher(item)"> mdi-pencil </v-icon>
-        <v-icon class="ml-8" @click="deleteTeacher(item.id)">
+        <v-icon v-if="item.role === 'teacher'" @click="editTeacher(item)">
+          mdi-pencil
+        </v-icon>
+        <v-icon
+          v-if="item.role === 'teacher'"
+          class="ml-8"
+          @click="deleteTeacher(item.id)"
+        >
           mdi-trash-can-outline
         </v-icon>
-      </template>
-    </v-data-table>
-
-    <v-data-table
-      :items-per-page="5"
-      :loading="tableLoader"
-      :headers="headerS"
-      :items="students"
-      class="mt-3"
-    >
-      <template v-slot:[`item.actions`]="{ item }">
-        <v-icon @click="acceptRegister(item)"> mdi-account-check </v-icon>
+        <v-icon v-else @click="acceptRegister(item)">
+          mdi-account-check
+        </v-icon>
       </template>
     </v-data-table>
 
@@ -45,6 +53,9 @@
         <v-toolbar color="teal" dark dense flat>
           <v-btn :loading="loading" @click="saveForm" plain class="text-none">
             <v-icon large>mdi-floppy</v-icon>
+          </v-btn>
+          <v-btn @click="clearForm" plain class="text-none">
+            <v-icon large>mdi-refresh</v-icon>
           </v-btn>
           <v-btn @click="closeForm" plain class="text-none">
             <v-icon large>mdi-close</v-icon>
@@ -60,7 +71,7 @@
           ></v-text-field>
           <v-text-field
             outlined
-            v-model="teacher.idN"
+            v-model="teacher.rollN"
             label="Id"
             hide-details="auto"
             class="mt-3"
@@ -84,7 +95,6 @@
             v-model="teacher.contact"
             label="Contact"
             hide-details="auto"
-            type="number"
             class="mt-3"
           ></v-text-field>
           <v-text-field
@@ -119,7 +129,7 @@ export default {
     form: false,
     teacher: {
       name: "",
-      idN: "",
+      rollN: "",
       department: "",
       subject: "",
       username: "",
@@ -131,27 +141,23 @@ export default {
     message: "",
     loading: false,
     tableLoader: false,
-    headerS: [
+    header: [
       { text: "Roll No", value: "rollN" },
       { text: "Name", value: "name" },
-      { text: "Father's Name", value: "father" },
       { text: "Contact", value: "number", sortable: false },
       { text: "Actions", value: "actions" },
     ],
-    headerT: [
-      { text: "Id", value: "idN" },
-      { text: "Name", value: "name" },
-      { text: "department", value: "department" },
-      { text: "Actions", value: "actions" },
-    ],
+    editFlag: false,
   }),
 
   methods: {
     ...mapActions({
       registration: "dataModule/registration",
       fetchStudents: "appointmentModule/getNRStudents",
-      acceptStudent: "appointmentModule/acceptRegistration",
+      acceptStudent: "dataModule/acceptRegistration",
       fetchTeachers: "appointmentModule/getTeachers",
+      deleteUser: "dataModule/deleteUser",
+      updateTeacher: "dataModule/updateTeacher",
     }),
     openForm() {
       this.form = true;
@@ -170,27 +176,40 @@ export default {
         return;
       }
       this.loading = true;
-      const resp = await this.registration(this.teacher);
+      let resp;
+      if (this.editFlag) {
+        resp = await this.updateTeacher(this.teacher);
+      } else {
+        resp = await this.registration(this.teacher);
+      }
       if (resp) {
         this.message = resp;
         this.snackbar = true;
+        this.loading = false;
+        return;
+      }
+      if (this.editFlag) {
+        this.message = "Updated successfully !!";
       } else {
         this.message = "Registered successfully !!";
-        this.snackbar = true;
-        this.clearForm();
       }
+      this.fetchStudents();
+      this.fetchTeachers();
+      this.clearForm();
+      this.snackbar = true;
       this.loading = false;
     },
     clearForm() {
       this.teacher = {
         name: "",
-        idN: "",
+        rollN: "",
         department: "",
         subject: "",
         username: "",
         password: "",
         contact: null,
       };
+      this.editFlag = false;
     },
     async acceptRegister(data) {
       this.tableLoader = true;
@@ -201,15 +220,23 @@ export default {
       await this.acceptStudent(obj);
       this.message = "Registration Accepted !!";
       this.snackbar = true;
+      this.fetchStudents();
       this.tableLoader = false;
     },
 
     async editTeacher(item) {
-      console.log(item);
+      this.teacher = item;
+      this.editFlag = true;
+      this.openForm();
     },
 
     async deleteTeacher(id) {
-      console.log(id);
+      this.tableLoader = true;
+      await this.deleteUser(id);
+      this.fetchTeachers();
+      this.message = "User Deleted !!";
+      this.snackbar = true;
+      this.tableLoader = false;
     },
   },
   computed: {
@@ -217,6 +244,10 @@ export default {
       students: (state) => state.appointmentModule.nonregistered_student,
       teachers: (state) => state.appointmentModule.teachers,
     }),
+
+    data() {
+      return this.teachers.concat(this.students);
+    },
   },
 };
 </script>
@@ -227,7 +258,7 @@ export default {
 }
 
 ::v-deep .v-data-table__wrapper {
-  max-height: 288px;
+  max-height: 500px;
   overflow: auto;
   scrollbar-width: thin;
 }
@@ -238,13 +269,5 @@ export default {
     color: white;
     font-size: medium;
   }
-}
-
-::v-deep .v-data-footer__select {
-  display: none;
-}
-
-::v-deep .v-data-footer {
-  justify-content: end;
 }
 </style>

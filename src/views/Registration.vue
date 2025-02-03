@@ -116,6 +116,7 @@ export default {
       gender: "",
       username: "",
       password: "",
+      role: "student",
       registered: false
     },
     tab: null,

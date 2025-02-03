@@ -33,15 +33,7 @@ export default {
             } catch (error) {
                 console.log(error)
             }
-        },
-        async acceptRegistration({ commit, dispatch }, payload) {
-            try {
-                await firebase.firestore().collection("users").doc(payload.id).set({ registered: payload.val }, { merge: true })
-                dispatch('getNRStudents');
-            } catch (error) {
-                console.log(error)
-            }
-        },
+        }
     },
     mutations: {
         set_teachers: (state, data) => {
@@ -49,6 +41,10 @@ export default {
         },
         nonregistered_student: (state, data) => {
             state.nonregistered_student = data;
+        },
+        clear_data: (state) => {
+            state.teachers = [];
+            state.nonregistered_student = [];
         }
     }
 }

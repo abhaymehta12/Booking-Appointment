@@ -49,6 +49,7 @@ export default {
                 localStorage.removeItem('loggedIn')
                 localStorage.removeItem('loggedUser')
                 commit("clear_data")
+                commit("appointmentModule/clear_data", null, { root: true })
             } catch (error) {
                 console.log(error)
             }
@@ -58,6 +59,28 @@ export default {
             user.docs.forEach((doc) => {
                 commit("set_user", doc.data())
             })
+        },
+        async acceptRegistration({ commit }, payload) {
+            try {
+                await firebase.firestore().collection("users").doc(payload.id).set({ registered: payload.val }, { merge: true })
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        async updateTeacher({ commit }, payload) {
+            try {
+                const queryPass = await firebase.firestore().collection('users').where('id', '!=', payload.id).where('password', '==', payload.password).get();
+                const queryUname = await firebase.firestore().collection('users').where('id', '!=', payload.id).where('username', '==', payload.username).get();
+                if (!queryUname.empty) {
+                    return "Username Already Exist"
+                } else if (!queryPass.empty) {
+                    return "Password Already Exist."
+                } else {
+                    await firebase.firestore().collection("users").doc(payload.id).set(payload, { merge: true })
+                }
+            } catch (error) {
+                console.log(error)
+            }
         },
         deleteUser({ commit }, payload) {
             firebase.firestore().collection("users").doc(payload).delete()
@@ -69,8 +92,6 @@ export default {
         },
         clear_data: (state) => {
             state.user = null;
-            state.teachers = [];
-            state.nonregistered_student = [];
         }
     }
 }
