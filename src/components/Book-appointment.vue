@@ -6,7 +6,7 @@
       top
       right
       class="mt-14"
-      timeout="700"
+      timeout="1000"
       >{{ errormessage }}</v-snackbar
     >
     <v-card>
@@ -61,7 +61,12 @@
               class="mt-5"
             ></v-text-field>
           </template>
-          <v-date-picker v-model="date" :min="new Date().toISOString().slice(0,10)" no-title scrollable>
+          <v-date-picker
+            v-model="date"
+            :min="new Date().toISOString().slice(0, 10)"
+            no-title
+            scrollable
+          >
             <v-spacer></v-spacer>
             <v-btn text color="primary" @click="menu = false"> Cancel </v-btn>
             <v-btn text color="primary" @click="$refs.menu.save(date)">
@@ -82,7 +87,8 @@
   </v-dialog>
 </template>
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
+
 export default {
   props: {
     user: Object,
@@ -102,9 +108,15 @@ export default {
     snackbar: false,
     errormessage: "",
   }),
+
+  created() {
+    this.getAllAppointments();
+  },
+
   methods: {
     ...mapActions({
       scheduleAppointment: "appointmentModule/scheduleAppointment",
+      getAllAppointments: "appointmentModule/getAllAppointments",
     }),
 
     openForm(data) {
@@ -127,6 +139,28 @@ export default {
       ) {
         this.snackbar = true;
         this.errormessage = "Please provide all details !!";
+        return;
+      }
+      let index;
+      if (this.user && this.user.role === "student") {
+        index = this.allappointments.findIndex(
+          (ele) =>
+            ele.date === this.date &&
+            ((this.user.id === ele.scheduledBy &&
+              ele.scheduledWith === this.bookingdetail) ||
+              ele.scheduledWith === "all")
+        );
+      } else {
+        index = this.allappointments.findIndex(
+          (ele) =>
+            ele.date === this.bookingdetail &&
+            (this.user.id === ele.scheduledBy ||
+              ele.scheduledWith === this.user.id)
+        );
+      }
+      if (index >= 0) {
+        this.snackbar = true;
+        this.errormessage = "Please select a diffferent date. !!";
         return;
       }
       this.loading = true;
@@ -158,6 +192,12 @@ export default {
       this.message = "";
       this.loading = false;
     },
+  },
+
+  computed: {
+    ...mapState({
+      allappointments: (state) => state.appointmentModule.allappointments,
+    }),
   },
 };
 </script>

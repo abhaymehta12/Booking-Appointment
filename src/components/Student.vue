@@ -1,8 +1,8 @@
 <template>
-  <v-container class="pt-0">
+  <v-container class="pt-0" fluid>
     <v-data-table
       :headers="header"
-      :items="[]"
+      :items="studentTable"
       :search="search"
       :hide-default-footer="true"
     >
@@ -15,6 +15,18 @@
           label="Search"
           hide-details="auto"
         ></v-text-field>
+      </template>
+      <template v-slot:[`item.teacherappointment`]="{ item }">
+        <span v-for="(el, index) in item.multipleapp" :key="index">
+          <div>{{ el.title }}</div>
+          <div>{{ el.date }}</div>
+        </span>
+      </template>
+      <template v-slot:[`item.myappointment`]="{ item }">
+        <span>
+          <div>{{ item.title }}</div>
+          <div>{{ item.singleapp }}</div>
+        </span>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon v-if="item" @click="bookingAppointment(item)" class="mr-8">
@@ -41,21 +53,24 @@ export default {
     header: [
       { text: "Name", value: "name" },
       { text: "Subject", value: "subject" },
-      { text: "Booked Appointment", value: "booked", sortable: false },
+      {
+        text: "Teacher’s Appointments",
+        value: "teacherappointment",
+        sortable: false,
+      },
+      { text: "My Appointments", value: "myappointment", sortable: false },
       { text: "Schedule Appointment", value: "actions", sortable: false },
     ],
     search: "",
   }),
 
   async created() {
-    await this.getAppointments();
     await this.fetchStudentData();
   },
 
   methods: {
     ...mapActions({
       fetchStudentData: "appointmentModule/fetchStudentData",
-      getAppointments: "appointmentModule/getAppointments"
     }),
 
     bookingAppointment(data) {
@@ -65,17 +80,9 @@ export default {
 
   computed: {
     ...mapState({
-      appoimtments: (state) => state.appointmentModule.appointments,
-      studentTable: (state) => state.appointmentModule.studentTable
+      studentTable: (state) => state.appointmentModule.studentTable,
     }),
   },
-
-  watch: {
-    studentTable(val) {
-      console.log(this.appoimtments)
-      console.log(this.studentTable)
-    }
-  }
 };
 </script>
 
