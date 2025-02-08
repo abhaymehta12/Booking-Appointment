@@ -1,7 +1,7 @@
 <template>
   <v-container>
-    <Teacher v-if="user && user.role === 'teacher'" />
-    <Student v-else />
+    <Teacher v-if="user && user.role === 'teacher'" :user='user' />
+    <Student v-if="user && user.role === 'student'" :user='user' />
   </v-container>
 </template>
 <script>
@@ -14,10 +14,6 @@ export default {
     Teacher,
     Student,
   },
-
-  data: () => ({
-    //
-  }),
 
   computed: {
     ...mapState("dataModule", { user: (state) => state.user }),

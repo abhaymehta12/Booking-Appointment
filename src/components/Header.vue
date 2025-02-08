@@ -1,15 +1,27 @@
 <template>
   <v-app-bar :elevation="2" app color="indigo" dark>
     <div class="mx-auto text-h5 font-weight-medium">Appointment Schedule</div>
-    <v-btn v-if="user" @click="signout" class="text-none px-3 px-sm-4" color="teal" dark>Log Out</v-btn>
+    <v-menu v-if="user" offset-y>
+      <template v-slot:activator="{ on, attrs }">
+        <v-avatar color="teal" v-bind="attrs" v-on="on">
+          <v-icon dark>mdi-account-circle</v-icon>
+        </v-avatar>
+      </template>
+      <v-list>
+        <v-list-item>
+          <v-list-item-title>{{ user.name }}</v-list-item-title>
+        </v-list-item>
+        <v-divider></v-divider>
+        <v-list-item @click="signout">
+          <v-list-item-title>Log Out</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
   </v-app-bar>
 </template>
 <script>
 import { mapActions, mapState } from "vuex";
 export default {
-  data: () => ({
-    //
-  }),
   methods: {
     ...mapActions("dataModule", ["logout"]),
     async signout() {

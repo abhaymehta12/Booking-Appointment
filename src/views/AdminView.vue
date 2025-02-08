@@ -18,7 +18,6 @@
       :headers="header"
       :items="data"
       group-by="role"
-      group-desc
       class="mt-3"
       :hide-default-footer="true"
     >
@@ -120,11 +119,6 @@
 import { mapActions, mapState } from "vuex";
 
 export default {
-  created() {
-    this.fetchStudents();
-    this.fetchTeachers();
-  },
-
   data: () => ({
     form: false,
     teacher: {
@@ -145,24 +139,31 @@ export default {
       { text: "Roll No", value: "rollN" },
       { text: "Name", value: "name" },
       { text: "Contact", value: "number", sortable: false },
-      { text: "Actions", value: "actions" },
+      { text: "Actions", value: "actions", sortable: false },
     ],
     editFlag: false,
   }),
 
+  created() {
+    this.fetchStudents();
+    this.fetchTeachers();
+  },
+
   methods: {
     ...mapActions({
       registration: "dataModule/registration",
-      fetchStudents: "appointmentModule/getNRStudents",
+      fetchStudents: "dataModule/getNRStudents",
       acceptStudent: "dataModule/acceptRegistration",
-      fetchTeachers: "appointmentModule/getTeachers",
+      fetchTeachers: "dataModule/getTeachers",
       deleteUser: "dataModule/deleteUser",
       updateTeacher: "dataModule/updateTeacher",
     }),
+
     openForm() {
       this.form = true;
     },
     closeForm() {
+      this.fetchStudents();
       this.form = false;
     },
     async saveForm() {
@@ -193,8 +194,6 @@ export default {
       } else {
         this.message = "Registered successfully !!";
       }
-      this.fetchStudents();
-      this.fetchTeachers();
       this.clearForm();
       this.snackbar = true;
       this.loading = false;
@@ -220,7 +219,6 @@ export default {
       await this.acceptStudent(obj);
       this.message = "Registration Accepted !!";
       this.snackbar = true;
-      this.fetchStudents();
       this.tableLoader = false;
     },
 
@@ -233,7 +231,6 @@ export default {
     async deleteTeacher(id) {
       this.tableLoader = true;
       await this.deleteUser(id);
-      this.fetchTeachers();
       this.message = "User Deleted !!";
       this.snackbar = true;
       this.tableLoader = false;
@@ -241,12 +238,12 @@ export default {
   },
   computed: {
     ...mapState({
-      students: (state) => state.appointmentModule.nonregistered_student,
-      teachers: (state) => state.appointmentModule.teachers,
+      students: (state) => state.dataModule.nonregistered_student,
+      teachers: (state) => state.dataModule.teachers,
     }),
 
     data() {
-      return this.teachers.concat(this.students);
+      return this.students.concat(this.teachers);
     },
   },
 };
@@ -256,18 +253,21 @@ export default {
   justify-content: flex-end;
   padding-right: 0px;
 }
-
 ::v-deep .v-data-table__wrapper {
   max-height: 500px;
   overflow: auto;
   scrollbar-width: thin;
 }
-
 ::v-deep .v-data-table-header {
   background: #3f51b5;
   span {
     color: white;
     font-size: medium;
   }
+}
+::v-deep .v-data-table-header__icon {
+  opacity: 1;
+  margin-left: 5px;
+  color: white !important;
 }
 </style>

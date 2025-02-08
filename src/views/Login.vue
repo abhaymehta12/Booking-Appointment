@@ -11,9 +11,8 @@
       top
       right
       class="mt-14"
-      timeout="700"
     >
-      Please provide valid details.</v-snackbar
+      {{message}}</v-snackbar
     >
     <v-form ref="form" class="mt-5">
       <v-text-field
@@ -59,6 +58,7 @@ export default {
     nameRules: [(v) => !!v || "Name is required"],
     passRules: [(v) => !!v || "Password is required"],
     snackbar: false,
+    message: "",
     loading: false,
   }),
 
@@ -74,11 +74,15 @@ export default {
         };
         const resp = await this.login(obj);
         if (!resp) {
+          this.message = "Please provide valid details."
           this.snackbar = true;
-        } else if (this.user.role === "admin") {
+        } else if (this.user && this.user.role === "admin") {
           this.$router.push("/adminpage");
-        } else {
+        } else if (this.user){
           this.$router.push("/home");
+        } else {
+          this.message = resp
+          this.snackbar = true
         }
       }
       this.loading = false;

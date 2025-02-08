@@ -4,7 +4,9 @@ import 'firebase/compat/firestore'
 export default {
     namespaced: true,
     state: {
-        user: null
+        user: null,
+        teachers: [],
+        nonregistered_student: [],
     },
     getters: {
     },
@@ -31,14 +33,19 @@ export default {
                 if (user.empty) {
                     return false;
                 } else {
+                    let msg
                     user.docs.forEach((doc) => {
+                        if (doc.data().role === 'student' && !doc.data().registered) {
+                            msg = "Not Registered. Contact Admin office.";
+                            return
+                        }
                         commit("set_user", doc.data())
                         if (doc.data().role === 'admin') {
                             localStorage.setItem('loggedUser', 'Admin')
                         }
                         localStorage.setItem('loggedIn', doc.data().id)
                     })
-                    return true;
+                    return msg ? msg : true
                 }
             } catch (error) {
                 console.log(error)
@@ -60,14 +67,15 @@ export default {
                 commit("set_user", doc.data())
             })
         },
-        async acceptRegistration({ commit }, payload) {
+        async acceptRegistration({ commit, dispatch }, payload) {
             try {
                 await firebase.firestore().collection("users").doc(payload.id).set({ registered: payload.val }, { merge: true })
+                dispatch('getNRStudents')
             } catch (error) {
                 console.log(error)
             }
         },
-        async updateTeacher({ commit }, payload) {
+        async updateTeacher({ commit, dispatch }, payload) {
             try {
                 const queryPass = await firebase.firestore().collection('users').where('id', '!=', payload.id).where('password', '==', payload.password).get();
                 const queryUname = await firebase.firestore().collection('users').where('id', '!=', payload.id).where('username', '==', payload.username).get();
@@ -77,14 +85,40 @@ export default {
                     return "Password Already Exist."
                 } else {
                     await firebase.firestore().collection("users").doc(payload.id).set(payload, { merge: true })
+                    dispatch('getTeachers')
                 }
             } catch (error) {
                 console.log(error)
             }
         },
-        deleteUser({ commit }, payload) {
-            firebase.firestore().collection("users").doc(payload).delete()
-        }
+        async deleteUser({ commit, dispatch }, payload) {
+            await firebase.firestore().collection("users").doc(payload).delete()
+            dispatch('getTeachers')
+        },
+        async getTeachers({ commit }) {
+            try {
+                let array = []
+                const data = await firebase.firestore().collection('users').where('role', '==', 'teacher').get();
+                data.docs.forEach((doc) => {
+                    array.push(doc.data())
+                })
+                commit("set_teachers", array)
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        async getNRStudents({ commit }) {
+            try {
+                let array = []
+                const data = await firebase.firestore().collection('users').where('registered', '==', false).get();
+                data.docs.forEach((doc) => {
+                    array.push(doc.data())
+                })
+                commit("nonregistered_student", array)
+            } catch (error) {
+                console.log(error)
+            }
+        },
     },
     mutations: {
         set_user: (state, data) => {
@@ -92,6 +126,14 @@ export default {
         },
         clear_data: (state) => {
             state.user = null;
+            state.teachers = [];
+            state.nonregistered_student = [];
+        },
+        set_teachers: (state, data) => {
+            state.teachers = data;
+        },
+        nonregistered_student: (state, data) => {
+            state.nonregistered_student = data;
         }
     }
 }

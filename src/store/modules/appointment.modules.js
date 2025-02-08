@@ -4,47 +4,74 @@ import 'firebase/compat/firestore'
 export default {
     namespaced: true,
     state: {
-        teachers: [],
-        nonregistered_student: []
+        appointments: [],
+        studentTable: []
     },
     getters: {
     },
     actions: {
-        async getTeachers({ commit }) {
+        async getAppointments({ commit }) {
             try {
-                let array = []
-                const data = await firebase.firestore().collection('users').where('role', '==', 'teacher').get();
-                data.docs.forEach((doc) => {
-                    array.push(doc.data())
-                })
-                commit("set_teachers", array)
+                const id = localStorage.getItem("loggedIn");
+                const data1 = await firebase.firestore().collection('appointments').where('scheduledBy', '==', id).get();
+                const data2 = await firebase.firestore().collection('appointments').where('scheduledWith', '==', id).get();
+                const combinedAppointments = [...data1.docs.map(doc => doc.data()), ...data2.docs.map(doc => doc.data())];
+                commit("set_appointments", combinedAppointments)
             } catch (error) {
                 console.log(error)
             }
         },
-        async getNRStudents({ commit }) {
+        async scheduleAppointment({ commit, dispatch }, payload) {
             try {
-                let array = []
-                const data = await firebase.firestore().collection('users').where('registered', '==', false).get();
-                data.docs.forEach((doc) => {
-                    array.push(doc.data())
-                })
-                commit("nonregistered_student", array)
+                const resp = await firebase.firestore().collection("appointments").add(payload);
+                await firebase.firestore().collection("appointments").doc(resp.id).set({ id: resp.id }, { merge: true })
+                dispatch('getAppointments')
             } catch (error) {
                 console.log(error)
             }
-        }
+        },
+        async approveAppointment({ commit, dispatch }, payload) {
+            try {
+                await firebase.firestore().collection("appointments").doc(payload.id).set(payload, { merge: true })
+                dispatch('getAppointments')
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        async cancelAppointment({ commit, dispatch }, payload) {
+            try {
+                await firebase.firestore().collection("appointments").doc(payload).delete()
+                dispatch('getAppointments')
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        async fetchStudentData({ commit }) {
+            try {
+                const id = localStorage.getItem("loggedIn");
+                const teachers = await firebase.firestore().collection('users').where('role', '==', 'teacher').get();
+                const myappointments = await firebase.firestore().collection('appointments').where('scheduledBy', '==', id).get();
+                const teacherappointments = await firebase.firestore().collection('appointments').where('scheduledWidth', '==', "all").get();
+                myappointments.docs.forEach((doc) => {
+                    console.log(doc.data())
+                })
+                teacherappointments.docs.forEach((doc) => {
+                    console.log(doc.data())
+                })
+                teachers.docs.forEach((doc) => {
+                    console.log(doc.data())
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        },
     },
     mutations: {
-        set_teachers: (state, data) => {
-            state.teachers = data;
+        set_appointments: (state, data) => {
+            state.appointments = data
         },
-        nonregistered_student: (state, data) => {
-            state.nonregistered_student = data;
-        },
-        clear_data: (state) => {
-            state.teachers = [];
-            state.nonregistered_student = [];
+        clear_data: (state,) => {
+            state.appointments = []
         }
     }
 }
