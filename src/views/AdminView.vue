@@ -138,7 +138,7 @@ export default {
     header: [
       { text: "Roll No", value: "rollN" },
       { text: "Name", value: "name" },
-      { text: "Contact", value: "number", sortable: false },
+      { text: "Contact", value: "contact", sortable: false },
       { text: "Actions", value: "actions", sortable: false },
     ],
     editFlag: false,
@@ -194,6 +194,7 @@ export default {
       } else {
         this.message = "Registered successfully !!";
       }
+      this.fetchTeachers();
       this.clearForm();
       this.snackbar = true;
       this.loading = false;
@@ -206,6 +207,7 @@ export default {
         subject: "",
         username: "",
         password: "",
+        role: "teacher",
         contact: null,
       };
       this.editFlag = false;

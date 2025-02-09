@@ -81,7 +81,7 @@
                       >{{ formatEventTime(event.start) }} -
                       {{ formatEventTime(event.end) }}</span
                     >
-                    <div>
+                    <div class="text-right">
                       <v-btn
                         :disabled="loading"
                         v-if="event.color === '#ed910aed'"

@@ -79,8 +79,9 @@
             class="timeInput"
             v-model="app_details.startTime"
             type="time"
+            title="Start Time"
           />
-          <input class="timeInput" v-model="app_details.endTime" type="time" />
+          <input class="timeInput" v-model="app_details.endTime" type="time" title="End Time" />
         </div>
       </v-card-text>
     </v-card>
