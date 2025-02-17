@@ -9,14 +9,17 @@
       timeout="700"
       >{{ message }}</v-snackbar
     >
-    <v-btn @click="openForm" class="text-none" color="teal" dark
-      >Add Teacher</v-btn
-    >
-
+    <div class="topRow">
+      <v-btn @click="openForm" class="text-none" color="teal" dark
+        >Add Teacher</v-btn
+      >
+      <input v-model="search" class="searchBox" />
+    </div>
     <v-data-table
       :loading="tableLoader"
       :headers="header"
       :items="data"
+      :search="search"
       group-by="role"
       class="mt-3"
       :hide-default-footer="true"
@@ -142,6 +145,7 @@ export default {
       { text: "Actions", value: "actions", sortable: false },
     ],
     editFlag: false,
+    search: "",
   }),
 
   created() {
@@ -210,6 +214,7 @@ export default {
         role: "teacher",
         contact: null,
       };
+      this.search = "";
       this.editFlag = false;
     },
     async acceptRegister(data) {
@@ -271,5 +276,15 @@ export default {
   opacity: 1;
   margin-left: 5px;
   color: white !important;
+}
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.searchBox {
+  height: 36px;
+  outline: auto;
+  text-indent: 10px;
 }
 </style>
