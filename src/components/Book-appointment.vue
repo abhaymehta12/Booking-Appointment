@@ -16,10 +16,11 @@
           @click="bookAppointment"
           plain
           class="text-none"
+          title="Add Appointment"
         >
           <v-icon large>mdi-floppy</v-icon>
         </v-btn>
-        <v-btn @click="closeForm" plain class="text-none">
+        <v-btn title="Close" @click="closeForm" plain class="text-none">
           <v-icon large>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>

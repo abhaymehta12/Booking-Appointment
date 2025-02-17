@@ -87,12 +87,14 @@
                         v-if="event.color === '#ed910aed'"
                         plain
                         @click="appointmentApprove(event)"
+                        title="Accept"
                         ><v-icon>mdi-check-circle-outline</v-icon></v-btn
                       >
                       <v-btn
                         :disabled="loading"
                         plain
                         @click="appointmentCancelled(event)"
+                        title="Cancel"
                         ><v-icon>mdi-trash-can-outline</v-icon></v-btn
                       >
                     </div>
