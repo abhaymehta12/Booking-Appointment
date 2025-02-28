@@ -34,7 +34,11 @@
         </td>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon title="Edit Details" v-if="item.role === 'teacher'" @click="editTeacher(item)">
+        <v-icon
+          title="Edit Details"
+          v-if="item.role === 'teacher'"
+          @click="editTeacher(item)"
+        >
           mdi-pencil
         </v-icon>
         <v-icon
@@ -45,7 +49,11 @@
         >
           mdi-trash-can-outline
         </v-icon>
-        <v-icon title="Accept Registration" v-else @click="acceptRegister(item)">
+        <v-icon
+          title="Accept Registration"
+          v-else
+          @click="acceptRegister(item)"
+        >
           mdi-account-check
         </v-icon>
       </template>
@@ -54,7 +62,13 @@
     <v-dialog v-model="form" width="500" persistent>
       <v-card>
         <v-toolbar color="teal" dark dense flat>
-          <v-btn title="Save" :loading="loading" @click="saveForm" plain class="text-none">
+          <v-btn
+            title="Save"
+            :loading="loading"
+            @click="saveForm"
+            plain
+            class="text-none"
+          >
             <v-icon large>mdi-floppy</v-icon>
           </v-btn>
           <v-btn title="Refresh" @click="clearForm" plain class="text-none">
@@ -117,6 +131,20 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="deleteAlert" width="400" persistent>
+      <v-card>
+        <v-card-title style="justify-content: center"
+          >Are you sure, you want to delete ?</v-card-title
+        >
+        <v-card-actions style="justify-content: center; padding: 20px">
+          <v-btn :disabled="tableLoader" @click="continueAlert()">Yes</v-btn
+          ><v-btn :disabled="tableLoader" class="ml-10" @click="closeAlert()"
+            >No</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 <script>
@@ -147,6 +175,8 @@ export default {
     ],
     editFlag: false,
     search: "",
+    deleteAlert: false,
+    deleteInfo: null,
   }),
 
   created() {
@@ -216,6 +246,7 @@ export default {
         contact: null,
       };
       this.search = "";
+      this.deleteInfo = null;
       this.editFlag = false;
     },
     async acceptRegister(data) {
@@ -236,12 +267,22 @@ export default {
       this.openForm();
     },
 
-    async deleteTeacher(id) {
+    deleteTeacher(id) {
+      this.deleteAlert = true;
+      this.deleteInfo = id;
+    },
+
+    async continueAlert() {
       this.tableLoader = true;
-      await this.deleteUser(id);
+      await this.deleteUser(this.deleteInfo);
       this.message = "User Deleted !!";
       this.snackbar = true;
+      this.closeAlert();
       this.tableLoader = false;
+    },
+
+    closeAlert() {
+      this.deleteAlert = false;
     },
   },
   computed: {

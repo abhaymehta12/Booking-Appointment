@@ -38,7 +38,11 @@ export default {
             try {
                 const resp = await firebase.firestore().collection("appointments").add(payload);
                 await firebase.firestore().collection("appointments").doc(resp.id).set({ id: resp.id }, { merge: true })
-                dispatch('getAppointments')
+                if (payload.scheduledWith = "all") {
+                    dispatch('getAppointments')
+                } else {
+                    dispatch('fetchStudentData')
+                }
             } catch (error) {
                 console.log(error)
             }
