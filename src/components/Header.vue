@@ -9,11 +9,11 @@
       </template>
       <v-list>
         <v-list-item>
-          <v-list-item-title>{{ user.name }}</v-list-item-title>
+          <v-list-item-title style="font-weight:500;">{{ user.name }}</v-list-item-title>
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item @click="signout">
-          <v-list-item-title>Log Out</v-list-item-title>
+          <v-list-item-title style="font-weight:500;">Log Out</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-menu>

@@ -1,6 +1,6 @@
 <template>
   <v-card
-    max-width="425"
+    max-width="450"
     height="100%"
     class="mx-auto pa-5 pa-sm-10"
     elevation="3"

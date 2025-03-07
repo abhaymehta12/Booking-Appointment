@@ -1,18 +1,12 @@
 <template>
   <v-card
-    max-width="425"
+    max-width="450"
     height="100%"
     class="mx-auto pa-5 pa-sm-15"
     elevation="3"
   >
-    <v-snackbar
-      v-model="snackbar"
-      color="red accent-2"
-      top
-      right
-      class="mt-14"
-    >
-      {{message}}</v-snackbar
+    <v-snackbar v-model="snackbar" color="red accent-2" top right class="mt-14">
+      {{ message }}</v-snackbar
     >
     <v-form ref="form" class="mt-5">
       <v-text-field
@@ -29,7 +23,9 @@
         :rules="passRules"
         label="Password"
         prepend-inner-icon="mdi-lock"
-        type="password"
+        :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+        :type="showPassword ? 'text' : 'password'"
+        @click:append="togglePasswordVisibility"
         required
       ></v-text-field>
     </v-form>
@@ -54,6 +50,7 @@ export default {
   data: () => ({
     username: "",
     password: "",
+    showPassword: false,
     valid: false,
     nameRules: [(v) => !!v || "Name is required"],
     passRules: [(v) => !!v || "Password is required"],
@@ -74,21 +71,24 @@ export default {
         };
         const resp = await this.login(obj);
         if (!resp) {
-          this.message = "Please provide valid details."
+          this.message = "Please provide valid details.";
           this.snackbar = true;
         } else if (this.user && this.user.role === "admin") {
           this.$router.push("/adminpage");
-        } else if (this.user){
+        } else if (this.user) {
           this.$router.push("/home");
         } else {
-          this.message = resp
-          this.snackbar = true
+          this.message = resp;
+          this.snackbar = true;
         }
       }
       this.loading = false;
     },
     goToRegister() {
       this.$router.push("/registration");
+    },
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
     },
   },
   computed: {
